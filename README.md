@@ -40,6 +40,10 @@ output_name = "3.91.213.1"
 
 ## To login use below command
 
+You need to login with your public ip as per your output
 ```
 ssh ec2-user@3.91.213.1 -i terraform_ec2_key
 ```
+
+## To access the Jenkins UI use URL "http://3.91.213.1:8080"
+Change the IP as per your ip in the output section
