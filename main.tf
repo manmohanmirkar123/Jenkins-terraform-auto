@@ -1,0 +1,112 @@
+terraform {
+  required_version = ">= 0.12"
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
+resource "aws_vpc" "jenkinsvpc" {
+  cidr_block = "10.0.0.0/16"
+   
+    tags = {
+        Name = "prod-vpc"
+    }
+}
+
+resource "aws_key_pair" "terraform_ec2_key" {
+  key_name = "terraform_ec2_key"
+  // public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfMCqXraSPxvhL2LIGluGC7Y8UsV1PuMcH1L3u7zdHnMQl0CzAt+1yjqdcbu/OVDBMtoPfimTp5BxawuodDdEEewNSOonL517oSQqwdaunkoy6bioITMvj6iiG4ab3thy0BaT0MWb7Thbf8KDHPIxLm0fdgJHSOhXRb6TEToNCi+zm9BVYcKiYK6HBfnh4wp9CI2pyhZ1OEhly/8K+SjQzg4j8TR/5EH7JEiCl64Y5gXwNxLDyjHHiGMqk2sv6EfxRncroAYVhonG/N63Fkd1BTOIWLNovgId/ehw/+ejh2LHi5Y7+whgPzVqaFfzmhXW/RSRMaAmxeAoLZWDUpeGx kayanazimov@kayanazimov.local"
+  public_key = "${file("terraform_ec2_key.pub")}"
+}
+
+resource "aws_subnet" "my_subnet" {
+  vpc_id            = aws_vpc.jenkinsvpc.id
+  #vpc_id            = “aws_vpc.jenkinsvpc.id”
+  map_public_ip_on_launch = "true"
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "tf-example"
+  }
+}
+ resource "aws_security_group" "jenkins_sg" {
+  name        = "jenkins_sg"
+  description = "Allow Jenkins Traffic"
+  #vpc_id      = aws_vpc.jenkinsvpc.id
+
+  ingress {
+    description      = "Allow from Personal CIDR block"
+    from_port        = 8080
+    to_port          = 8080
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description      = "Allow SSH from Personal CIDR block"
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name = "Jenkins SG"
+  }
+}
+
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-2.0*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["amazon"] # Canonical
+}
+resource "aws_instance" "web" {
+  ami             = data.aws_ami.amazon_linux.id
+  instance_type   = "t2.micro"
+  key_name        = "terraform_ec2_key"
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.name]
+  #security_groups = [aws_security_group.jenkins_sg.name]
+  user_data       = <<EOF
+  #!/bin/bash
+
+amazon-linux-extras install epel -y
+sudo yum update –y
+sudo wget -O /etc/yum.repos.d/jenkins.repo \
+    https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+sudo yum upgrade -y
+sudo yum install jenkins java-1.8.0-openjdk-devel -y
+sudo systemctl daemon-reload
+sudo systemctl start jenkins
+sudo systemctl status jenkins
+  EOF
+  tags = {
+    Name = "Jenkins"
+  }
+}
+
