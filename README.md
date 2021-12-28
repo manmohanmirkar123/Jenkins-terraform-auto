@@ -38,7 +38,7 @@ Outputs:
 Public_ip_of_the_Jenkins_EC2 = "3.91.213.1"
 ```
 
-## To login use below command
+## To login with server use below command
 
 You need to login with your public ip as per your output
 ```
