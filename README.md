@@ -35,7 +35,7 @@ eg.
 ```
 Outputs:
 
-Public_ip_of_the_Jenkins_EC2 = "44.201.90.159"
+Public_ip_of_the_Jenkins_EC2 = "3.91.213.1"
 ```
 
 ## To login use below command
