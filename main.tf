@@ -89,7 +89,7 @@ resource "aws_instance" "web" {
   ami             = data.aws_ami.amazon_linux.id
   instance_type   = "t2.micro"
   key_name        = "terraform_ec2_key"
-  vpc_security_group_ids = [aws_security_group.jenkins_sg.name]
+  security_groups = [aws_security_group.jenkins_sg.name]
   #security_groups = [aws_security_group.jenkins_sg.name]
   user_data       = <<EOF
   #!/bin/bash
