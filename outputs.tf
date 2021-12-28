@@ -1,3 +1,3 @@
 output "output_name" {
-    value = "some resource"
+    value = aws_instance.web.public_ip
 }
