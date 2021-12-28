@@ -29,3 +29,17 @@ terraform plan -var-file="vars/dev-east.tfvars"
 ```
 terraform apply -var-file="vars/dev-east.tfvars"
 ```
+
+##Check the Public ip in the output
+eg. 
+```
+Outputs:
+
+output_name = "3.91.213.1"
+```
+
+## To login use below command
+
+```
+ssh ec2-user@3.91.213.1 -i terraform_ec2_key
+```
