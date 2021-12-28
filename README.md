@@ -5,7 +5,7 @@
 ssh-keygen -f terraform_ec2_key
 ```
 
-## This will create two files namely terraform_ec2_key and terraform_ec2_key.pub. We are referencing terraform_ec2_key.pub in the terraform code for creating the AWS key pair
+This will create two files namely terraform_ec2_key and terraform_ec2_key.pub. We are referencing terraform_ec2_key.pub in the terraform code for creating the AWS key pair
 
 
 # Terraform Starter
